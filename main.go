@@ -1,18 +1,14 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/georgiy-belyanin/ttx/runner"
 	"os"
+
+	"github.com/georgiy-belyanin/ttx/cmd"
 )
 
 func main() {
-	configPath := os.Args[1]
-
-	err := runner.RunClusterFromConfig(configPath)
+	err := cmd.Execute()
 	if err != nil {
-		fmt.Println("Unable to start the cluster from the config:", err)
-		return
+		os.Exit(-1)
 	}
 }
