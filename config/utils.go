@@ -1,8 +1,10 @@
 package config
 
 import (
-	"gopkg.in/yaml.v3"
 	"os"
+	"path/filepath"
+
+	"gopkg.in/yaml.v3"
 )
 
 func LoadYamlFile(fileName string) (*Config, error) {
@@ -19,4 +21,35 @@ func LoadYamlFile(fileName string) (*Config, error) {
 	}
 
 	return &config, nil
+}
+
+var names = []string{
+	"config.yml",
+	"config.yaml",
+	"source.yml",
+	"source.yaml",
+}
+
+func FindYamlFileAtPath(path string) (string, error) {
+	dirEntries, err := os.ReadDir(path)
+	if err != nil {
+		return "", err
+	}
+
+	for _, name := range names {
+		for _, dirEntry := range dirEntries {
+			if dirEntry.IsDir() {
+				continue
+			}
+
+			fileName := dirEntry.Name()
+			if dirEntry.Name() != name {
+				continue
+			}
+
+			return filepath.Join(path, fileName), nil
+		}
+	}
+
+	return FindYamlFileAtPath(filepath.Join(path, ".."))
 }
