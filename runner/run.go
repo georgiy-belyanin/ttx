@@ -2,12 +2,14 @@ package runner
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/georgiy-belyanin/ttx/config"
 	"os/exec"
 	"strings"
 	"sync"
+
+	"github.com/fatih/color"
+	"github.com/georgiy-belyanin/ttx/config"
 )
 
 var InstanceColors = []*color.Color{
@@ -80,6 +82,22 @@ func RunClusterFromConfig(configPath string) error {
 		}()
 	}
 	wg.Wait()
+
+	return nil
+}
+
+func RunClusterFromNearestConfig() error {
+	configPath, err := config.FindYamlFileAtPath(".")
+	if err != nil {
+		return errors.New("unable to seek for any of the configuration files in the current directory and it's parent directories")
+	}
+
+	fmt.Println("Found configuration at", configPath)
+
+	err = RunClusterFromConfig(configPath)
+	if err != nil {
+		return fmt.Errorf("unable to start the cluster from the config file %s: %s", configPath, err)
+	}
 
 	return nil
 }
