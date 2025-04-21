@@ -18,7 +18,7 @@ var startCmd = &cobra.Command{
 
 		ctx := context.Background()
 
-		if len(args) > 1 {
+		if len(args) >= 1 {
 			configPath := args[0]
 			err = runner.RunClusterFromConfig(ctx, configPath)
 		} else {
