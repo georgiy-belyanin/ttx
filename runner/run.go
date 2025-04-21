@@ -23,10 +23,32 @@ var InstanceColors = []*color.Color{
 	color.New(color.FgGreen),
 }
 
-var InfoColor = color.New(color.FgCyan)
+var DefaultColor = color.New(color.Reset)
+var InfoColor = color.New(color.Reset)
 var WarnColor = color.New(color.FgYellow)
 var ErrorColor = color.New(color.FgRed)
 var FatalColor = color.New(color.FgRed)
+
+func colorLogMessage(msg string) string {
+	markersAndColors := [](struct {
+		string
+		*color.Color
+	}){
+		{"I>", InfoColor},
+		{"W>", WarnColor},
+		{"E>", ErrorColor},
+		{"F>", FatalColor},
+	}
+
+	msgColor := DefaultColor
+	for _, markerAndColor := range markersAndColors {
+		if strings.Contains(msg, markerAndColor.string) {
+			msgColor = markerAndColor.Color
+		}
+	}
+
+	return msgColor.Sprint(msg)
+}
 
 func runInstanceColored(ctx context.Context, instanceName string, configPath string, color *color.Color) error {
 	c1 := exec.Command("tarantool", "--name", instanceName, "--config", configPath)
@@ -47,16 +69,9 @@ func runInstanceColored(ctx context.Context, instanceName string, configPath str
 		coloredInstanceName = color.Sprint(instanceName)
 	}
 
-	replacer := strings.NewReplacer(
-		"I>", InfoColor.Sprint("I>"),
-		"W>", WarnColor.Sprint("W>"),
-		"E>", ErrorColor.Sprint("E>"),
-		"F>", FatalColor.Sprint("F>"),
-	)
-
 	for scn.Scan() {
-		msg := replacer.Replace(scn.Text())
-		fmt.Println(coloredInstanceName, "|", msg)
+		coloredMsg := colorLogMessage(scn.Text())
+		fmt.Println(coloredInstanceName, "|", coloredMsg)
 	}
 
 	<-ctx.Done()
