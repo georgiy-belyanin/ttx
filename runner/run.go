@@ -55,7 +55,7 @@ func runInstanceColored(ctx context.Context, instanceName string, configPath str
 
 	stderr, err := c1.StderrPipe()
 	if err != nil {
-		panic("fuck")
+		return err
 	}
 
 	scn := bufio.NewScanner(stderr)
