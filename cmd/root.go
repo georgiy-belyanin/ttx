@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/georgiy-belyanin/ttx/runner"
@@ -17,7 +18,7 @@ during the development.
 `,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		err := runner.RunClusterFromNearestConfig()
+		err := runner.RunClusterFromNearestConfig(context.Background())
 		if err != nil {
 			fmt.Println(err)
 		}

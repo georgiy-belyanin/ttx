@@ -2,9 +2,12 @@ package runner
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
 	"sync"
 
@@ -25,7 +28,7 @@ var WarnColor = color.New(color.FgYellow)
 var ErrorColor = color.New(color.FgRed)
 var FatalColor = color.New(color.FgRed)
 
-func runInstanceColored(instanceName string, configPath string, color *color.Color) error {
+func runInstanceColored(ctx context.Context, instanceName string, configPath string, color *color.Color) error {
 	c1 := exec.Command("tarantool", "--name", instanceName, "--config", configPath)
 
 	stderr, err := c1.StderrPipe()
@@ -56,14 +59,19 @@ func runInstanceColored(instanceName string, configPath string, color *color.Col
 		fmt.Println(coloredInstanceName, "|", msg)
 	}
 
+	<-ctx.Done()
+
 	return c1.Wait()
 }
 
-func RunClusterFromConfig(configPath string) error {
+func RunClusterFromConfig(ctx context.Context, configPath string) error {
 	config, err := config.LoadYamlFile(configPath)
 	if err != nil {
 		return err
 	}
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
 
 	var wg sync.WaitGroup
 	instanceNames := config.InstanceNames()
@@ -75,7 +83,7 @@ func RunClusterFromConfig(configPath string) error {
 		go func() {
 			defer wg.Done()
 
-			err := runInstanceColored(instanceName, configPath, color)
+			err := runInstanceColored(ctx, instanceName, configPath, color)
 			if err != nil {
 				fmt.Println("Unable to start instance", instanceName, err)
 			}
@@ -86,7 +94,7 @@ func RunClusterFromConfig(configPath string) error {
 	return nil
 }
 
-func RunClusterFromNearestConfig() error {
+func RunClusterFromNearestConfig(ctx context.Context) error {
 	configPath, err := config.FindYamlFileAtPath(".")
 	if err != nil {
 		return errors.New("unable to seek for any of the configuration files in the current directory and it's parent directories")
@@ -94,7 +102,7 @@ func RunClusterFromNearestConfig() error {
 
 	fmt.Println("Found configuration at", configPath)
 
-	err = RunClusterFromConfig(configPath)
+	err = RunClusterFromConfig(ctx, configPath)
 	if err != nil {
 		return fmt.Errorf("unable to start the cluster from the config file %s: %s", configPath, err)
 	}
