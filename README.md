@@ -12,6 +12,8 @@ Simply run `ttx` to seek for the Tarantool `config.yml` files nearby and start t
 ttx
 # Or explicitly provide the configuration and start the cluster using -c flag.
 ttx start -c config.yml
+# Or instead of starting the whole cluster run only specific its parts.
+ttx start replicaset-003 -c config.yaml
 ```
 
 ## Build & install
