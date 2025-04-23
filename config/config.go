@@ -1,28 +1,69 @@
 package config
 
-type Instance struct {
+import yaml "gopkg.in/yaml.v3"
+
+type ReplicasetConfig struct {
+	Instances      map[string]InstanceConfig `yaml:"instances"`
+	InstanceConfig InstanceConfig
 }
 
-type Replicaset struct {
-	Instances map[string]Instance `yaml:"instances"`
+func (j *ReplicasetConfig) UnmarshalYAML(value *yaml.Node) error {
+	var raw map[string]any
+	if err := value.Decode(&raw); err != nil {
+		return err
+	}
+	type Plain ReplicasetConfig
+	var plain Plain
+	if err := value.Decode(&plain); err != nil {
+		return err
+	}
+	if err := value.Decode(&plain.InstanceConfig); err != nil {
+		return err
+	}
+	*j = ReplicasetConfig(plain)
+	return nil
 }
 
-type Group struct {
-	Replicasets map[string]Replicaset `yaml:"replicasets"`
+type GroupConfig struct {
+	Replicasets    map[string]ReplicasetConfig `yaml:"replicasets"`
+	InstanceConfig InstanceConfig
+}
+
+func (j *GroupConfig) UnmarshalYAML(value *yaml.Node) error {
+	var raw map[string]any
+	if err := value.Decode(&raw); err != nil {
+		return err
+	}
+	type Plain GroupConfig
+	var plain Plain
+	if err := value.Decode(&plain); err != nil {
+		return err
+	}
+	if err := value.Decode(&plain.InstanceConfig); err != nil {
+		return err
+	}
+	*j = GroupConfig(plain)
+	return nil
 }
 
 type Config struct {
-	Groups map[string]Group `yaml:"groups"`
+	Groups         map[string]GroupConfig `yaml:"groups"`
+	InstanceConfig InstanceConfig
 }
 
-func (c *Config) InstanceNames() []string {
-	instanceNames := make([]string, 0)
-	for _, group := range c.Groups {
-		for _, replicaset := range group.Replicasets {
-			for instanceName := range replicaset.Instances {
-				instanceNames = append(instanceNames, instanceName)
-			}
-		}
+func (j *Config) UnmarshalYAML(value *yaml.Node) error {
+	var raw map[string]any
+	if err := value.Decode(&raw); err != nil {
+		return err
 	}
-	return instanceNames
+	type Plain Config
+	var plain Plain
+	if err := value.Decode(&plain); err != nil {
+		return err
+	}
+	if err := value.Decode(&plain.InstanceConfig); err != nil {
+		return err
+	}
+	*j = Config(plain)
+	return nil
 }
