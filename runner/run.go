@@ -3,7 +3,6 @@ package runner
 import (
 	"bufio"
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -108,22 +107,6 @@ func RunClusterFromConfig(ctx context.Context, configPath string) error {
 		}()
 	}
 	wg.Wait()
-
-	return nil
-}
-
-func RunClusterFromNearestConfig(ctx context.Context) error {
-	configPath, err := config.FindYamlFileAtPath(".")
-	if err != nil {
-		return errors.New("unable to seek for any of the configuration files in the current directory and it's parent directories")
-	}
-
-	fmt.Println("Found configuration at", configPath)
-
-	err = RunClusterFromConfig(ctx, configPath)
-	if err != nil {
-		return fmt.Errorf("unable to start the cluster from the config file %s: %s", configPath, err)
-	}
 
 	return nil
 }

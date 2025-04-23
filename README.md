@@ -10,8 +10,8 @@ Simply run `ttx` to seek for the Tarantool `config.yml` files nearby and start t
 
 ```bash
 ttx
-# Or explicitly provide the configuration and start the cluster.
-ttx start config.yml
+# Or explicitly provide the configuration and start the cluster using -c flag.
+ttx start -c config.yml
 ```
 
 ## Build & install
