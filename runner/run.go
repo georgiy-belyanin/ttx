@@ -110,3 +110,54 @@ func RunClusterFromConfig(ctx context.Context, configPath string) error {
 
 	return nil
 }
+
+func RunClusterPartsFromConfig(ctx context.Context, configPath string, parts []string) error {
+	conf, err := config.LoadYamlFile(configPath)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	var wg sync.WaitGroup
+	instances, err := conf.Instances()
+	if err != nil {
+		return err
+	}
+
+	instancesToStart := make([]config.Instance, 0)
+	for _, instance := range instances {
+		for _, part := range parts {
+			if instance.Name == part {
+				instancesToStart = append(instancesToStart, instance)
+				break
+			}
+			if instance.Replicaset == part {
+				instancesToStart = append(instancesToStart, instance)
+				break
+			}
+			if instance.Group == part {
+				instancesToStart = append(instancesToStart, instance)
+				break
+			}
+		}
+	}
+
+	for i, instance := range instancesToStart {
+		color := InstanceColors[i%len(InstanceColors)]
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			err := runInstanceColored(ctx, instance.Name, configPath, color)
+			if err != nil {
+				fmt.Println("Unable to start instance", instance.Name, err)
+			}
+		}()
+	}
+	wg.Wait()
+
+	return nil
+}
