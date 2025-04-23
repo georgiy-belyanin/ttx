@@ -1,0 +1,12 @@
+#!/bin/sh
+
+tarantool -e "do
+    local fio = require('fio')
+    local json = require('json')
+    local instance_config = require('internal.config.instance_config')
+
+    f = fio.open('instance.config', {'O_CREAT', 'O_WRONLY'})
+    f:write(json.encode(instance_config:jsonschema()))
+end"
+go-jsonschema --only-models --tags yaml -e -p config instance.config -o instance_config.go
+json-schema-defaults instance.config | yq -P > instance.config.default.yaml

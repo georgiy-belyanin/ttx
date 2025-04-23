@@ -89,18 +89,21 @@ func RunClusterFromConfig(ctx context.Context, configPath string) error {
 	defer cancel()
 
 	var wg sync.WaitGroup
-	instanceNames := config.InstanceNames()
+	instances, err := config.Instances()
+	if err != nil {
+		return err
+	}
 
-	for i, instanceName := range instanceNames {
+	for i, instance := range instances {
 		color := InstanceColors[i%len(InstanceColors)]
 
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 
-			err := runInstanceColored(ctx, instanceName, configPath, color)
+			err := runInstanceColored(ctx, instance.Name, configPath, color)
 			if err != nil {
-				fmt.Println("Unable to start instance", instanceName, err)
+				fmt.Println("Unable to start instance", instance.Name, err)
 			}
 		}()
 	}
