@@ -2,6 +2,8 @@
 
 package config
 
+import "gopkg.in/yaml.v3"
+
 // Instance configuration
 type InstanceConfig struct {
 	// Using Tarantool as an application server, you can run your own Lua
@@ -2693,3 +2695,243 @@ type InstanceConfigWalMode string
 const InstanceConfigWalModeFsync InstanceConfigWalMode = "fsync"
 const InstanceConfigWalModeNone InstanceConfigWalMode = "none"
 const InstanceConfigWalModeWrite InstanceConfigWalMode = "write"
+
+var defaultInstanceConfigYaml = []byte(`fiber:
+  io_collect_interval: null
+  too_long_threshold: 0.5
+  top:
+    enabled: false
+  slice:
+    err: 1
+    warn: 0.5
+  tx_user_pool_size: 768
+  worker_pool_threads: 4
+isolated: false
+wal:
+  ext: null
+  queue_max_size: 16777216
+  dir_rescan_delay: 2
+  dir: var/lib/{{ instance_name }}
+  retention_period: 0
+  mode: write
+  max_size: 268435456
+failover:
+  connect_timeout: 1
+  probe_interval: 10
+  renew_interval: 10
+  call_timeout: 1
+  stateboard:
+    enabled: true
+    renew_interval: 2
+    keepalive_interval: 10
+  lease_interval: 30
+  replicasets: {}
+  log:
+    to: stderr
+log:
+  level: 5
+  format: plain
+  syslog:
+    identity: tarantool
+    server: null
+    facility: local7
+  modules: null
+  file: var/log/{{ instance_name }}/tarantool.log
+  nonblock: false
+  to: stderr
+  pipe: null
+iproto:
+  readahead: 16320
+  net_msg_max: 768
+  listen: null
+  threads: 1
+  advertise:
+    peer:
+      params: {}
+    client: null
+    sharding:
+      params: {}
+feedback:
+  host: https://feedback.tarantool.io
+  metrics_collect_interval: 60
+  send_metrics: true
+  metrics_limit: 1048576
+  enabled: true
+  crashinfo: true
+  interval: 3600
+roles: []
+app:
+  cfg: {}
+console:
+  socket: var/run/{{ instance_name }}/tarantool.control
+  enabled: true
+replication:
+  peers: null
+  autoexpel:
+    enabled: false
+  anon_ttl: 3600
+  synchro_queue_max_size: 16777216
+  anon: false
+  connect_timeout: 30
+  reconnect_timeout: null
+  sync_lag: 10
+  skip_conflict: false
+  threads: 1
+  timeout: 1
+  synchro_quorum: N / 2 + 1
+  bootstrap_strategy: auto
+  failover: "off"
+  election_timeout: 5
+  election_fencing_mode: soft
+  synchro_timeout: 5
+  election_mode: null
+  sync_timeout: null
+compat:
+  sql_priv: new
+  binary_data_decoding: new
+  wal_cleanup_delay_deprecation: old
+  sql_seq_scan_default: new
+  box_cfg_replication_sync_timeout: new
+  box_tuple_new_vararg: new
+  console_session_scope_vars: old
+  json_escape_forward_slash: new
+  box_space_max: new
+  box_space_execute_priv: new
+  fiber_channel_close_mode: new
+  box_error_serialize_verbose: old
+  box_error_unpack_type_and_code: old
+  yaml_pretty_multiline: new
+  box_consider_system_spaces_synchronous: old
+  replication_synchro_timeout: old
+  box_session_push_deprecation: old
+  box_tuple_extension: new
+  fiber_slice_default: new
+  box_info_cluster_meaning: new
+  c_func_iproto_multireturn: new
+lua:
+  memory: 2147483648
+credentials:
+  roles: {}
+  users: {}
+sql:
+  cache_size: 5242880
+metrics:
+  labels: {}
+  include: []
+  exclude: []
+sharding:
+  rebalancer_max_receiving: 100
+  weight: 1
+  shard_index: bucket_id
+  sync_timeout: 1
+  discovery_mode: "on"
+  rebalancer_mode: auto
+  failover_ping_timeout: 5
+  rebalancer_max_sending: 1
+  bucket_count: 3000
+  sched_ref_quota: 300
+  rebalancer_disbalance_threshold: 1
+  roles: []
+  sched_move_quota: 1
+snapshot:
+  snap_io_rate_limit: null
+  by:
+    wal_size: 1000000000000000000
+    interval: 3600
+  count: 2
+  dir: var/lib/{{ instance_name }}
+security:
+  password_enforce_specialchars: false
+  secure_erasing: false
+  password_min_length: 0
+  password_enforce_lowercase: false
+  password_lifetime_days: 0
+  auth_type: chap-sha1
+  password_enforce_digits: false
+  password_history_length: 0
+  auth_retries: 0
+  password_enforce_uppercase: false
+  auth_delay: 0
+  disable_guest: false
+process:
+  pid_file: var/run/{{ instance_name }}/tarantool.pid
+  coredump: false
+  title: tarantool - {{ instance_name }}
+  background: false
+  username: null
+  work_dir: null
+  strip_core: true
+audit_log:
+  format: json
+  syslog:
+    identity: tarantool
+    server: null
+    facility: local7
+  file: var/log/{{ instance_name }}/audit.log
+  pipe: null
+  filter: []
+  spaces: null
+  extract_key: false
+  to: devnull
+  nonblock: false
+database:
+  use_mvcc_engine: false
+  instance_uuid: null
+  txn_timeout: 3153600000
+  txn_isolation: best-effort
+  replicaset_uuid: null
+  mode: null
+  hot_standby: false
+labels: {}
+flightrec:
+  logs_size: 10485760
+  logs_max_msg_size: 4096
+  requests_size: 10485760
+  logs_log_level: 6
+  requests_max_req_size: 16384
+  metrics_period: 180
+  metrics_interval: 1
+  requests_max_res_size: 16384
+  enabled: false
+vinyl:
+  page_size: 8192
+  run_count_per_level: 2
+  read_threads: 1
+  write_threads: 4
+  timeout: 60
+  cache: 134217728
+  run_size_ratio: 3.5
+  max_tuple_size: 1048576
+  dir: var/lib/{{ instance_name }}
+  bloom_fpr: 0.05
+  defer_deletes: false
+  memory: 134217728
+  range_size: null
+roles_cfg: {}
+memtx:
+  sort_threads: null
+  min_tuple_size: 16
+  slab_alloc_factor: 1.05
+  allocator: small
+  max_tuple_size: 1048576
+  memory: 268435456
+  slab_alloc_granularity: 8
+config:
+  context: {}
+  etcd:
+    watchers: {}
+    ssl: {}
+    endpoints: []
+    http:
+      request: {}
+  reload: auto
+  storage:
+    endpoints:
+      - params: {}
+    reconnect_after: 3
+    timeout: 3`)
+var DefaultInstanceConfig = InstanceConfig{}
+
+func init() {
+	yaml.Unmarshal(defaultInstanceConfigYaml, &DefaultInstanceConfig)
+}
