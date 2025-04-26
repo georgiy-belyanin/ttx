@@ -1,6 +1,8 @@
 package config
 
 import (
+	"regexp"
+
 	"dario.cat/mergo"
 )
 
@@ -54,6 +56,20 @@ func (ic *InstanceConfig) ConnectUris() []string {
 	return connectUris
 }
 
+var substituteRe *regexp.Regexp = nil
+
+func substituteVars(s string, instanceName string) string {
+	if substituteRe == nil {
+		var err error
+		substituteRe, err = regexp.Compile(`\{\{\s*instance_name\s*\}\}`)
+		if err != nil {
+			return instanceName
+		}
+	}
+
+	return substituteRe.ReplaceAllString(s, instanceName)
+}
+
 func (config *Config) Instances() ([]Instance, error) {
 	instances := make([]Instance, 0)
 
@@ -80,11 +96,16 @@ func (config *Config) Instances() ([]Instance, error) {
 					return []Instance{}, err
 				}
 
+				connectUris := instanceConfig.ConnectUris()
+				for i, connectUri := range connectUris {
+					connectUris[i] = substituteVars(connectUri, instanceName)
+				}
+
 				instance := Instance{
 					Name:        instanceName,
 					Replicaset:  replicasetName,
 					Group:       groupName,
-					ConnectUris: instanceConfig.ConnectUris(),
+					ConnectUris: connectUris,
 				}
 
 				instances = append(instances, instance)
