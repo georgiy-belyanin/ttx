@@ -13,6 +13,7 @@ import (
 
 func evalLua(text string) string {
 	var evalLuaBase = `local yaml = require('yaml')
+yaml.cfg{ encode_use_tostring = true }
 local cmd = [[%s]]
 
 local f, err = loadstring("return " .. cmd)
